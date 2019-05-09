@@ -1,19 +1,19 @@
 package com.etnetera.hr.data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simple data entity describing basic properties of every JavaScript framework.
- * 
+ *
  * @author Etnetera
  *
  */
 @Entity
 public class JavaScriptFramework {
+
+    public enum HypeLevel {DEAD, SOSO, NORMAL, AWESOME, TOP}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,12 +22,16 @@ public class JavaScriptFramework {
 	@Column(nullable = false, length = 30)
 	private String name;
 
-	private String version;
+	@Column(name = "hype_level")
+	private HypeLevel hypeLevel;
 
-	private String deprecationDate;
+	@OneToMany(
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+		fetch = FetchType.EAGER
+	)
+	private List<FrameworkVersion> versions = new ArrayList<>();
 
-	private String hypeLevel;
-	
 	public JavaScriptFramework() {
 	}
 
@@ -51,9 +55,25 @@ public class JavaScriptFramework {
 		this.name = name;
 	}
 
-	@Override
+    public HypeLevel getHypeLevel() {
+        return hypeLevel;
+    }
+
+    public void setHypeLevel(HypeLevel hypeLevel) {
+        this.hypeLevel = hypeLevel;
+    }
+
+    public List<FrameworkVersion> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(List<FrameworkVersion> versions) {
+        this.versions = versions;
+    }
+
+    @Override
 	public String toString() {
 		return "JavaScriptFramework [id=" + id + ", name=" + name + "]";
 	}
-		
+
 }
