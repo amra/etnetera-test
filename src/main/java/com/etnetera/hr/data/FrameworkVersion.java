@@ -4,6 +4,10 @@ import javax.persistence.*;
 import java.sql.Date;
 
 @Entity
+@Table(
+        name = "framework_version",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"version", "framework_id"})
+)
 public class FrameworkVersion {
 
     @Id
@@ -15,6 +19,10 @@ public class FrameworkVersion {
 
     @Column(name = "deprecation_date")
     private Date deprecationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "framework_id")
+    private JavaScriptFramework javaScriptFramework;
 
     public Long getId() {
         return id;
@@ -38,6 +46,14 @@ public class FrameworkVersion {
 
     public void setDeprecationDate(Date deprecationDate) {
         this.deprecationDate = deprecationDate;
+    }
+
+    public JavaScriptFramework getJavaScriptFramework() {
+        return javaScriptFramework;
+    }
+
+    public void setJavaScriptFramework(JavaScriptFramework javaScriptFramework) {
+        this.javaScriptFramework = javaScriptFramework;
     }
 
     @Override

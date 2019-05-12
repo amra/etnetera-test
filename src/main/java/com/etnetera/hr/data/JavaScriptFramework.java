@@ -1,6 +1,7 @@
 package com.etnetera.hr.data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,9 @@ import java.util.List;
  *
  */
 @Entity
+@Table(
+		name = "javascript_framework"
+)
 public class JavaScriptFramework {
 
     public enum HypeLevel {DEAD, SOSO, NORMAL, AWESOME, TOP}
@@ -19,13 +23,14 @@ public class JavaScriptFramework {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(nullable = false, length = 30)
+	@Column(nullable = false, length = 30, unique = true)
 	private String name;
 
 	@Column(name = "hype_level")
 	private HypeLevel hypeLevel;
 
 	@OneToMany(
+		mappedBy = "javaScriptFramework",
         cascade = CascadeType.ALL,
         orphanRemoval = true,
 		fetch = FetchType.EAGER
