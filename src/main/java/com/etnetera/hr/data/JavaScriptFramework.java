@@ -1,7 +1,10 @@
 package com.etnetera.hr.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +16,8 @@ import java.util.List;
  */
 @Entity
 @Table(
-		name = "javascript_framework"
+		name = "javascript_framework",
+		uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "version"})}
 )
 public class JavaScriptFramework {
 
@@ -23,19 +27,17 @@ public class JavaScriptFramework {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(nullable = false, length = 30, unique = true)
+	@Column(nullable = false, length = 30)
 	private String name;
 
 	@Column(name = "hype_level")
 	private HypeLevel hypeLevel;
 
-	@OneToMany(
-		mappedBy = "javaScriptFramework",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-		fetch = FetchType.EAGER
-	)
-	private List<FrameworkVersion> versions = new ArrayList<>();
+	@Column
+	private String version;
+
+	@Column(name = "deprecation_date")
+	private Date deprecationDate;
 
 	public JavaScriptFramework() {
 	}
@@ -68,15 +70,23 @@ public class JavaScriptFramework {
         this.hypeLevel = hypeLevel;
     }
 
-    public List<FrameworkVersion> getVersions() {
-        return versions;
-    }
+	public String getVersion() {
+		return version;
+	}
 
-    public void setVersions(List<FrameworkVersion> versions) {
-        this.versions = versions;
-    }
+	public void setVersion(String version) {
+		this.version = version;
+	}
 
-    @Override
+	public Date getDeprecationDate() {
+		return deprecationDate;
+	}
+
+	public void setDeprecationDate(Date deprecationDate) {
+		this.deprecationDate = deprecationDate;
+	}
+
+	@Override
 	public String toString() {
 		return "JavaScriptFramework [id=" + id + ", name=" + name + "]";
 	}
