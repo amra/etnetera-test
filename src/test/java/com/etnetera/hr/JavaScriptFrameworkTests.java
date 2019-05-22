@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.sun.security.auth.UserPrincipal;
 import org.assertj.core.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -114,6 +116,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
+    @WithMockUser(username="user",roles={"USER"})
     public void update() throws Exception {
         controller.save(build("tester"));
         JavaScriptFramework framework = controller.show(1L).get();
@@ -124,7 +127,12 @@ public class JavaScriptFrameworkTests {
         LOG.info("requestJson:\n{}", requestJson);
 
         // Updating the instance.
-        mockMvc.perform(post("/framework/save/").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+        mockMvc.perform(
+                post("/framework/save/")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestJson)
+//                    .principal(new UserPrincipal("user"))
+                )
                 .andExpect(status().is2xxSuccessful());
         framework = controller.show(1L).get();
         assertEquals("2.0", framework.getVersion());
