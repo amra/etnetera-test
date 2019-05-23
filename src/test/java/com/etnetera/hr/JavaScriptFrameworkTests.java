@@ -55,6 +55,7 @@ public class JavaScriptFrameworkTests {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     public void saveAndFind() {
         build(new String[]{"React", "Angular"}).forEach(f -> controller.save(f));
         List<JavaScriptFramework> result = iterate(controller.frameworks());
@@ -69,9 +70,19 @@ public class JavaScriptFrameworkTests {
     public void find() throws Exception {
         build(new String[]{"React"}).forEach(f -> controller.save(f));
         mockMvc.perform(get("/framework/list")
-            .contentType("text/plain"))
-            .andExpect(status().is2xxSuccessful())
-            .andExpect(content().json("[{\"id\":1,\"name\":\"React\",\"hypeLevel\":\"NORMAL\",\"version\":\"1.0\",\"deprecationDate\":\"2019-11-15\"}]"))
+                .contentType("text/plain"))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json("[{\"id\":1,\"name\":\"React\",\"hypeLevel\":\"NORMAL\",\"version\":\"1.0\",\"deprecationDate\":\"2019-11-15\"}]"))
+        ;
+    }
+
+    @Test
+    public void show() throws Exception {
+        build(new String[]{"React"}).forEach(f -> controller.save(f));
+        mockMvc.perform(get("/framework/show/1")
+                .contentType("text/plain"))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json("{\"id\":1,\"name\":\"React\",\"hypeLevel\":\"NORMAL\",\"version\":\"1.0\",\"deprecationDate\":\"2019-11-15\"}"))
         ;
     }
 
@@ -97,6 +108,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     public void save() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         SimpleBeanPropertyFilter idFilter = SimpleBeanPropertyFilter.serializeAllExcept("id");
@@ -116,7 +128,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
-    @WithMockUser(username="user",roles={"USER"})
+    @WithMockUser(username = "user", roles = {"USER"})
     public void update() throws Exception {
         controller.save(build("tester"));
         JavaScriptFramework framework = controller.show(1L).get();
@@ -129,10 +141,9 @@ public class JavaScriptFrameworkTests {
         // Updating the instance.
         mockMvc.perform(
                 post("/framework/save/")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestJson)
-//                    .principal(new UserPrincipal("user"))
-                )
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson)
+        )
                 .andExpect(status().is2xxSuccessful());
         framework = controller.show(1L).get();
         assertEquals("2.0", framework.getVersion());
@@ -140,6 +151,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     public void mockNull() throws Exception {
         mockMvc.perform(get("/framework/show/")
                 .contentType("text/plain"))
@@ -160,6 +172,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     public void deleteMock() throws Exception {
         controller.save(build("test"));
         mockMvc.perform(get("/framework/delete/1")
@@ -167,6 +180,24 @@ public class JavaScriptFrameworkTests {
                 .andExpect(status().is2xxSuccessful())
         ;
         assertFalse(controller.frameworks().iterator().hasNext());
+    }
+
+    @Test
+    public void rightsViolation() throws Exception {
+        // Create.
+        build(new String[]{"React", "Angular"}).forEach(f -> controller.save(f));
+        List<JavaScriptFramework> result = iterate(controller.frameworks());
+        assertEquals(2, result.size());
+
+        mockMvc.perform(post("/framework/save/").contentType(MediaType.APPLICATION_JSON).content(""))
+                .andExpect(status().is4xxClientError());
+
+        mockMvc.perform(post("/framework/update/").contentType(MediaType.APPLICATION_JSON).content(""))
+                .andExpect(status().is4xxClientError());
+
+        mockMvc.perform(get("/framework/delete/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+
     }
 
     private JavaScriptFramework build(String name) {
